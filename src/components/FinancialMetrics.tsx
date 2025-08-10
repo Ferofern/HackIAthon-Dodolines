@@ -1,6 +1,6 @@
 // components/FinancialMetrics.tsx
 import { Card } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, DollarSign, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Wallet, BarChart2, ShieldCheck } from "lucide-react";
 
 interface FinancialData {
   activos: number | null | undefined;
@@ -9,6 +9,13 @@ interface FinancialData {
   utilidad_neta: number | null | undefined;
   impuesto_renta: number | null | undefined;
   n_empleados: number | null | undefined;
+  liquidez_corriente?: number | null | undefined;
+  deuda_total?: number | null | undefined;
+  gastos_financieros?: number | null | undefined;
+  margen_bruto?: number | null | undefined;
+  rent_neta_ventas?: number | null | undefined;
+  roe?: number | null | undefined;
+  roa?: number | null | undefined;
   ruc: string;
   nombre: string;
 }
@@ -62,32 +69,32 @@ export const FinancialMetrics = ({ data, previousData }: FinancialMetricsProps) 
     return ((current - previous) / previous) * 100;
   };
 
-  // Valores seguros (0 si no existe)
+  // Valores actuales
   const ingresosVentas = safeNumber(data?.ingresos_ventas);
   const utilidadNeta = safeNumber(data?.utilidad_neta);
   const activos = safeNumber(data?.activos);
   const patrimonio = safeNumber(data?.patrimonio);
+  const liquidezCorriente = safeNumber(data?.liquidez_corriente);
+  const deudaTotal = safeNumber(data?.deuda_total);
+  const gastosFinancieros = safeNumber(data?.gastos_financieros);
+  const margenBruto = safeNumber(data?.margen_bruto);
+  const rentNetaVentas = safeNumber(data?.rent_neta_ventas);
+  const roe = safeNumber(data?.roe);
+  const roa = safeNumber(data?.roa);
 
-  // Indicadores calculados
-
-  // Margen neto = utilidad_neta / ingresos_ventas * 100 (indica rentabilidad)
-  const margenNeto = ingresosVentas === 0 ? 0 : (utilidadNeta / ingresosVentas) * 100;
-
-  // Razón de endeudamiento = (activos - patrimonio) / activos * 100
-  const razonEndeudamiento = activos === 0 ? 0 : ((activos - patrimonio) / activos) * 100;
-
-  // Liquidez simple (aquí no hay info de pasivos corrientes ni activos corrientes, 
-  // pero podrías agregar si tienes datos)
-  // Por ahora omitido.
-
-  // Cambios respecto a datos previos (si disponibles)
+  // Cambios con respecto al periodo anterior
   const changeIngresos = calcChange(ingresosVentas, safeNumber(previousData?.ingresos_ventas));
   const changeUtilidad = calcChange(utilidadNeta, safeNumber(previousData?.utilidad_neta));
   const changeActivos = calcChange(activos, safeNumber(previousData?.activos));
 
+  // Indicadores calculados
+  const margenNeto = ingresosVentas === 0 ? 0 : (utilidadNeta / ingresosVentas) * 100;
+  const razonEndeudamiento = activos === 0 ? 0 : ((activos - patrimonio) / activos) * 100;
+  const cargaFinanciera = ingresosVentas === 0 ? 0 : (gastosFinancieros / ingresosVentas) * 100;
+
   const metrics: MetricCardProps[] = [
     {
-      title: "Ventas Mensuales",
+      title: "Ventas Totales",
       value: `$${ingresosVentas.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       change: changeIngresos,
       icon: <DollarSign className="w-6 h-6 text-white" />,
@@ -114,10 +121,30 @@ export const FinancialMetrics = ({ data, previousData }: FinancialMetricsProps) 
       value: `${razonEndeudamiento.toFixed(2)}%`,
       icon: <TrendingDown className="w-6 h-6 text-white" />,
     },
+    {
+      title: "Liquidez Corriente",
+      value: liquidezCorriente ? liquidezCorriente.toFixed(2) : "N/A",
+      icon: <BarChart2 className="w-6 h-6 text-white" />,
+    },
+    {
+      title: "Carga Financiera (%)",
+      value: `${cargaFinanciera.toFixed(2)}%`,
+      icon: <ShieldCheck className="w-6 h-6 text-white" />,
+    },
+    {
+      title: "Rentabilidad sobre Patrimonio (ROE) (%)",
+      value: `${roe.toFixed(2)}%`,
+      icon: <TrendingUp className="w-6 h-6 text-white" />,
+    },
+    {
+      title: "Rentabilidad sobre Activos (ROA) (%)",
+      value: `${roa.toFixed(2)}%`,
+      icon: <TrendingUp className="w-6 h-6 text-white" />,
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {metrics.map((metric, index) => (
         <MetricCard key={index} {...metric} />
       ))}
