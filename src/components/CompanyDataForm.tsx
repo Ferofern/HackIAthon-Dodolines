@@ -6,8 +6,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getCompanyFinancialData } from "@/lib/firebaseUtils";
 
-import { FinancialMetrics } from "./FinancialMetrics";
-
 interface CompanyData {
   companyName: string;
   ruc: string;
@@ -32,7 +30,11 @@ interface FinancialData {
   utilidad_neta: number | null | undefined;
 }
 
-export const CompanyDataForm = () => {
+interface CompanyDataFormProps {
+  setFinancialData: React.Dispatch<React.SetStateAction<FinancialData | undefined>>;
+}
+
+export const CompanyDataForm = ({ setFinancialData }: CompanyDataFormProps) => {
   const [formData, setFormData] = useState<CompanyData>({
     companyName: "",
     ruc: "",
@@ -42,20 +44,6 @@ export const CompanyDataForm = () => {
     monthlyRevenue: "",
     socialMediaLinks: "",
     description: "",
-  });
-
-  // Inicializar financialData con valores en cero para que al montar el componente muestre 0
-  const [financialData, setFinancialData] = useState<FinancialData>({
-    activos: 0,
-    anio: 0,
-    expediente: 0,
-    impuesto_renta: 0,
-    ingresos_ventas: 0,
-    n_empleados: 0,
-    nombre: "",
-    patrimonio: 0,
-    ruc: "",
-    utilidad_neta: 0,
   });
 
   const [loading, setLoading] = useState(false);
@@ -101,33 +89,11 @@ export const CompanyDataForm = () => {
         setError(null);
       } else {
         setError("No se encontró información para ese RUC.");
-        setFinancialData({
-          activos: 0,
-          anio: 0,
-          expediente: 0,
-          impuesto_renta: 0,
-          ingresos_ventas: 0,
-          n_empleados: 0,
-          nombre: "",
-          patrimonio: 0,
-          ruc: "",
-          utilidad_neta: 0,
-        });
+        setFinancialData(undefined);
       }
     } catch (err) {
       setError("Error al buscar datos.");
-      setFinancialData({
-        activos: 0,
-        anio: 0,
-        expediente: 0,
-        impuesto_renta: 0,
-        ingresos_ventas: 0,
-        n_empleados: 0,
-        nombre: "",
-        patrimonio: 0,
-        ruc: "",
-        utilidad_neta: 0,
-      });
+      setFinancialData(undefined);
     } finally {
       setLoading(false);
     }
@@ -143,50 +109,44 @@ export const CompanyDataForm = () => {
   };
 
   return (
-    <>
-      <Card className="p-6 shadow-card mb-6">
-        <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-foreground">Información de la Empresa</h3>
+    <Card className="p-6 shadow-card mb-6">
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold text-foreground">Información de la Empresa</h3>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="companyName">Nombre de la Empresa</Label>
-                <Input
-                  id="companyName"
-                  value={formData.companyName}
-                  onChange={(e) => handleInputChange("companyName", e.target.value)}
-                  placeholder="Ingrese el nombre de la empresa"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ruc">Número de RUC</Label>
-                <Input
-                  id="ruc"
-                  value={formData.ruc}
-                  onChange={(e) => handleInputChange("ruc", e.target.value)}
-                  placeholder="Ingrese el número de RUC"
-                />
-                <Button
-                  type="button"
-                  className="mt-2 w-full bg-gradient-primary text-white"
-                  onClick={handleSearch}
-                  disabled={loading}
-                >
-                  {loading ? "Buscando..." : "Buscar"}
-                </Button>
-                {error && <p className="text-destructive mt-1">{error}</p>}
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Nombre de la Empresa</Label>
+              <Input
+                id="companyName"
+                value={formData.companyName}
+                onChange={(e) => handleInputChange("companyName", e.target.value)}
+                placeholder="Ingrese el nombre de la empresa"
+              />
             </div>
 
-            {/* Otros campos opcionales */}
-
-          </form>
-        </div>
-      </Card>
-
-      <FinancialMetrics data={financialData} />
-    </>
+            <div className="space-y-2">
+              <Label htmlFor="ruc">Número de RUC</Label>
+              <Input
+                id="ruc"
+                value={formData.ruc}
+                onChange={(e) => handleInputChange("ruc", e.target.value)}
+                placeholder="Ingrese el número de RUC"
+              />
+              <Button
+                type="button"
+                className="mt-2 w-full bg-gradient-primary text-white"
+                onClick={handleSearch}
+                disabled={loading}
+              >
+                {loading ? "Buscando..." : "Buscar"}
+              </Button>
+              {error && <p className="text-destructive mt-1">{error}</p>}
+            </div>
+          </div>
+          {/* Otros campos si deseas */}
+        </form>
+      </div>
+    </Card>
   );
 };

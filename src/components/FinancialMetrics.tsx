@@ -1,27 +1,26 @@
+// components/FinancialMetrics.tsx
 import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, Wallet } from "lucide-react";
 
 interface FinancialData {
   activos: number | null | undefined;
-  anio: number | null | undefined;
-  expediente: number | null | undefined;
-  impuesto_renta: number | null | undefined;
-  ingresos_ventas: number | null | undefined;
-  n_empleados: number | null | undefined;
-  nombre: string;
   patrimonio: number | null | undefined;
-  ruc: string;
+  ingresos_ventas: number | null | undefined;
   utilidad_neta: number | null | undefined;
+  impuesto_renta: number | null | undefined;
+  n_empleados: number | null | undefined;
+  ruc: string;
+  nombre: string;
 }
 
 interface MetricCardProps {
   title: string;
   value: string;
-  change: number;
+  change?: number;  // Opcional, algunos indicadores no tienen cambio
   icon: React.ReactNode;
 }
 
-const MetricCard = ({ title, value, change, icon }: MetricCardProps) => {
+const MetricCard = ({ title, value, change = 0, icon }: MetricCardProps) => {
   const isPositive = change >= 0;
 
   return (
@@ -30,17 +29,19 @@ const MetricCard = ({ title, value, change, icon }: MetricCardProps) => {
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold text-foreground">{value}</p>
-          <div className="flex items-center space-x-1">
-            {isPositive ? (
-              <TrendingUp className="w-4 h-4 text-success" />
-            ) : (
-              <TrendingDown className="w-4 h-4 text-destructive" />
-            )}
-            <span className={`text-sm ${isPositive ? "text-success" : "text-destructive"}`}>
-              {isPositive ? "+" : ""}
-              {change.toFixed(1)}%
-            </span>
-          </div>
+          {change !== 0 && (
+            <div className="flex items-center space-x-1">
+              {isPositive ? (
+                <TrendingUp className="w-4 h-4 text-success" />
+              ) : (
+                <TrendingDown className="w-4 h-4 text-destructive" />
+              )}
+              <span className={`text-sm ${isPositive ? "text-success" : "text-destructive"}`}>
+                {isPositive ? "+" : ""}
+                {change.toFixed(1)}%
+              </span>
+            </div>
+          )}
         </div>
         <div className="bg-gradient-primary p-3 rounded-lg">{icon}</div>
       </div>
@@ -49,26 +50,11 @@ const MetricCard = ({ title, value, change, icon }: MetricCardProps) => {
 };
 
 interface FinancialMetricsProps {
-  data?: FinancialData; // opcional para permitir valores por defecto
-  previousData?: Partial<FinancialData>; // para cálculo de cambios, opcional
+  data?: FinancialData;
+  previousData?: Partial<FinancialData>;
 }
 
 export const FinancialMetrics = ({ data, previousData }: FinancialMetricsProps) => {
-  // Valores por defecto inicializados en 0 o vacío
-  const safeData: FinancialData = {
-    activos: 0,
-    anio: 0,
-    expediente: 0,
-    impuesto_renta: 0,
-    ingresos_ventas: 0,
-    n_empleados: 0,
-    nombre: "",
-    patrimonio: 0,
-    ruc: "",
-    utilidad_neta: 0,
-    ...data,
-  };
-
   const safeNumber = (value: number | null | undefined) => (typeof value === "number" ? value : 0);
 
   const calcChange = (current: number, previous?: number) => {
@@ -76,40 +62,62 @@ export const FinancialMetrics = ({ data, previousData }: FinancialMetricsProps) 
     return ((current - previous) / previous) * 100;
   };
 
-  const ingresosVentas = safeNumber(safeData.ingresos_ventas);
-  const utilidadNeta = safeNumber(safeData.utilidad_neta);
-  const activos = safeNumber(safeData.activos);
-  const patrimonio = safeNumber(safeData.patrimonio);
+  // Valores seguros (0 si no existe)
+  const ingresosVentas = safeNumber(data?.ingresos_ventas);
+  const utilidadNeta = safeNumber(data?.utilidad_neta);
+  const activos = safeNumber(data?.activos);
+  const patrimonio = safeNumber(data?.patrimonio);
 
-  const metrics = [
+  // Indicadores calculados
+
+  // Margen neto = utilidad_neta / ingresos_ventas * 100 (indica rentabilidad)
+  const margenNeto = ingresosVentas === 0 ? 0 : (utilidadNeta / ingresosVentas) * 100;
+
+  // Razón de endeudamiento = (activos - patrimonio) / activos * 100
+  const razonEndeudamiento = activos === 0 ? 0 : ((activos - patrimonio) / activos) * 100;
+
+  // Liquidez simple (aquí no hay info de pasivos corrientes ni activos corrientes, 
+  // pero podrías agregar si tienes datos)
+  // Por ahora omitido.
+
+  // Cambios respecto a datos previos (si disponibles)
+  const changeIngresos = calcChange(ingresosVentas, safeNumber(previousData?.ingresos_ventas));
+  const changeUtilidad = calcChange(utilidadNeta, safeNumber(previousData?.utilidad_neta));
+  const changeActivos = calcChange(activos, safeNumber(previousData?.activos));
+
+  const metrics: MetricCardProps[] = [
     {
-      title: "Monthly Revenue",
+      title: "Ventas Mensuales",
       value: `$${ingresosVentas.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      change: calcChange(ingresosVentas, safeNumber(previousData?.ingresos_ventas)),
+      change: changeIngresos,
       icon: <DollarSign className="w-6 h-6 text-white" />,
     },
     {
-      title: "Cash Flow",
+      title: "Flujo de Caja (Utilidad Neta)",
       value: `$${utilidadNeta.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      change: calcChange(utilidadNeta, safeNumber(previousData?.utilidad_neta)),
+      change: changeUtilidad,
       icon: <Wallet className="w-6 h-6 text-white" />,
     },
     {
-      title: "Total Assets",
+      title: "Activos Totales",
       value: `$${activos.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      change: calcChange(activos, safeNumber(previousData?.activos)),
+      change: changeActivos,
       icon: <TrendingUp className="w-6 h-6 text-white" />,
     },
     {
-      title: "Debt Ratio",
-      value: activos === 0 ? "0%" : `${(((activos - patrimonio) / activos) * 100).toFixed(1)}%`,
-      change: 0,
+      title: "Margen Neto (%)",
+      value: `${margenNeto.toFixed(2)}%`,
+      icon: <TrendingUp className={`w-6 h-6 text-white ${margenNeto >= 0 ? "text-success" : "text-destructive"}`} />,
+    },
+    {
+      title: "Razón de Endeudamiento (%)",
+      value: `${razonEndeudamiento.toFixed(2)}%`,
       icon: <TrendingDown className="w-6 h-6 text-white" />,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       {metrics.map((metric, index) => (
         <MetricCard key={index} {...metric} />
       ))}
