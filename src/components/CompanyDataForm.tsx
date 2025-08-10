@@ -40,124 +40,128 @@ export const CompanyDataForm = () => {
     e.preventDefault();
     
     toast({
-      title: "Company data saved",
-      description: "Your company information has been updated successfully.",
+      title: "Datos de la empresa guardados",
+      description: "La información de su empresa ha sido actualizada correctamente.",
     });
   };
 
   return (
     <Card className="p-6 shadow-card">
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-foreground">Company Information</h3>
+        <h3 className="text-lg font-semibold text-foreground">Información de la Empresa</h3>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name</Label>
+              <Label htmlFor="companyName">Nombre de la Empresa</Label>
               <Input
                 id="companyName"
                 value={formData.companyName}
                 onChange={(e) => handleInputChange('companyName', e.target.value)}
-                placeholder="Enter company name"
+                placeholder="Ingrese el nombre de la empresa"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="ruc">RUC Number</Label>
+              <Label htmlFor="ruc">Número de RUC</Label>
               <Input
                 id="ruc"
                 value={formData.ruc}
                 onChange={(e) => handleInputChange('ruc', e.target.value)}
-                placeholder="Enter RUC number"
+                placeholder="Ingrese el número de RUC"
               />
+                            <Button type="button" className="mt-2 w-full bg-gradient-primary text-white">
+                Buscar
+              </Button>
             </div>
+            
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="industry">Industry</Label>
+              <Label htmlFor="industry">Industria</Label>
               <Select onValueChange={(value) => handleInputChange('industry', value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select industry" />
+                  <SelectValue placeholder="Seleccione industria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                  <SelectItem value="services">Services</SelectItem>
-                  <SelectItem value="technology">Technology</SelectItem>
-                  <SelectItem value="agriculture">Agriculture</SelectItem>
-                  <SelectItem value="construction">Construction</SelectItem>
-                  <SelectItem value="hospitality">Hospitality</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="retail">Comercio Minorista</SelectItem>
+                  <SelectItem value="manufacturing">Manufactura</SelectItem>
+                  <SelectItem value="services">Servicios</SelectItem>
+                  <SelectItem value="technology">Tecnología</SelectItem>
+                  <SelectItem value="agriculture">Agricultura</SelectItem>
+                  <SelectItem value="construction">Construcción</SelectItem>
+                  <SelectItem value="hospitality">Hospitalidad</SelectItem>
+                  <SelectItem value="other">Otra</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="employees">Number of Employees</Label>
+              <Label htmlFor="employees">Número de Empleados</Label>
               <Select onValueChange={(value) => handleInputChange('employees', value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select range" />
+                  <SelectValue placeholder="Seleccione rango" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1-10">1-10</SelectItem>
                   <SelectItem value="11-50">11-50</SelectItem>
                   <SelectItem value="51-200">51-200</SelectItem>
                   <SelectItem value="201-500">201-500</SelectItem>
-                  <SelectItem value="500+">500+</SelectItem>
+                  <SelectItem value="500+">Más de 500</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="yearsOperation">Years in Operation</Label>
+              <Label htmlFor="yearsOperation">Años en Operación</Label>
               <Input
                 id="yearsOperation"
                 type="number"
                 value={formData.yearsOperation}
                 onChange={(e) => handleInputChange('yearsOperation', e.target.value)}
-                placeholder="Enter years"
+                placeholder="Ingrese años"
                 min="0"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="monthlyRevenue">Monthly Revenue (USD)</Label>
+            <Label htmlFor="monthlyRevenue">Ingresos Mensuales (USD)</Label>
             <Input
               id="monthlyRevenue"
               type="number"
               value={formData.monthlyRevenue}
               onChange={(e) => handleInputChange('monthlyRevenue', e.target.value)}
-              placeholder="Enter monthly revenue"
+              placeholder="Ingrese ingresos mensuales"
               min="0"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="socialMediaLinks">Social Media Links</Label>
+            <Label htmlFor="socialMediaLinks">Enlaces de Redes Sociales</Label>
             <Textarea
               id="socialMediaLinks"
               value={formData.socialMediaLinks}
               onChange={(e) => handleInputChange('socialMediaLinks', e.target.value)}
-              placeholder="Enter social media URLs (Facebook, Instagram, LinkedIn, etc.)"
+              placeholder="Ingrese URLs de redes sociales (Facebook, Instagram, LinkedIn, etc.)"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Business Description</Label>
+            <Label htmlFor="description">Descripción del Negocio</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Describe your business activities and services"
+              placeholder="Describa las actividades y servicios de su negocio"
               rows={4}
             />
           </div>
 
           <Button type="submit" className="w-full bg-gradient-primary text-white">
-            Save Company Information
+            Guardar Información de la Empresa
           </Button>
         </form>
       </div>

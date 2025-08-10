@@ -6,7 +6,7 @@ import { CompanyDataForm } from "@/components/CompanyDataForm";
 import { RiskSimulator } from "@/components/RiskSimulator";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, BarChart3, Share2, Upload, Settings, Zap } from "lucide-react";
+import { Building2, BarChart3, Share2, Upload, Zap } from "lucide-react";
 
 const Index = () => {
   return (
@@ -33,15 +33,15 @@ const Index = () => {
       </header>
 
       <div className="container mx-auto px-6 py-6">
-        <Tabs defaultValue="dashboard" className="space-y-6">
+        <Tabs defaultValue="data" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-fit">
-            <TabsTrigger value="dashboard" className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
-              <span>Dashboard</span>
-            </TabsTrigger>
             <TabsTrigger value="data" className="flex items-center space-x-2">
               <Upload className="w-4 h-4" />
               <span>Data Input</span>
+            </TabsTrigger>
+            <TabsTrigger value="dashboard" className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4" />
+              <span>Dashboard</span>
             </TabsTrigger>
             <TabsTrigger value="social" className="flex items-center space-x-2">
               <Share2 className="w-4 h-4" />
@@ -52,6 +52,13 @@ const Index = () => {
               <span>Simulator</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="data" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <FileUpload />
+              <CompanyDataForm />
+            </div>
+          </TabsContent>
 
           <TabsContent value="dashboard" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -110,10 +117,8 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Financial Metrics */}
             <FinancialMetrics />
 
-            {/* Additional Insights */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="p-6 shadow-card">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Risk Assessment Summary</h3>
@@ -154,13 +159,6 @@ const Index = () => {
                   </div>
                 </div>
               </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="data" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <FileUpload />
-              <CompanyDataForm />
             </div>
           </TabsContent>
 
