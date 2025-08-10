@@ -1,18 +1,19 @@
-import { ref, get, child } from "firebase/database";
-import { database } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { firestore } from "./firebase";
 
-export const fetchCompanyDataByRUC = async (ruc: string) => {
+export const getCompanyFinancialData = async (ruc: string) => {
   if (!ruc) return null;
   try {
-    const dbRef = ref(database);
-    const snapshot = await get(child(dbRef, `companies/${ruc}`));
-    if (snapshot.exists()) {
-      return snapshot.val();
+    const docRef = doc(firestore, "companies", ruc);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data();
     } else {
       return null;
     }
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error fetching Firestore data:", error);
     return null;
   }
 };

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { getCompanyFinancialData } from "@/lib/firebaseUtils";
+
+import { FinancialMetrics } from "./FinancialMetrics"; // Ajusta la ruta según ubicación real
 
 interface CompanyData {
   companyName: string;
@@ -18,27 +19,90 @@ interface CompanyData {
   description: string;
 }
 
+interface FinancialData {
+  activos: number | null | undefined;
+  anio: number | null | undefined;
+  expediente: number | null | undefined;
+  impuesto_renta: number | null | undefined;
+  ingresos_ventas: number | null | undefined;
+  n_empleados: number | null | undefined;
+  nombre: string;
+  patrimonio: number | null | undefined;
+  ruc: string;
+  utilidad_neta: number | null | undefined;
+}
+
 export const CompanyDataForm = () => {
   const [formData, setFormData] = useState<CompanyData>({
-    companyName: '',
-    ruc: '',
-    industry: '',
-    employees: '',
-    yearsOperation: '',
-    monthlyRevenue: '',
-    socialMediaLinks: '',
-    description: ''
+    companyName: "",
+    ruc: "",
+    industry: "",
+    employees: "",
+    yearsOperation: "",
+    monthlyRevenue: "",
+    socialMediaLinks: "",
+    description: "",
   });
 
+  const [financialData, setFinancialData] = useState<FinancialData | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleInputChange = (field: keyof CompanyData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSearch = async () => {
+    if (!formData.ruc) {
+      setError("Por favor ingrese un RUC válido.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await getCompanyFinancialData(formData.ruc);
+      if (data) {
+        // Actualizar formulario con datos básicos
+        setFormData((prev) => ({
+          ...prev,
+          companyName: data.nombre || "",
+          employees: data.n_empleados ? data.n_empleados.toString() : "",
+          monthlyRevenue: data.ingresos_ventas ? data.ingresos_ventas.toString() : "",
+          ruc: data.ruc || prev.ruc,
+        }));
+
+        // Actualizar financialData para que FinancialMetrics muestre info
+        setFinancialData({
+          activos: data.activos ?? 0,
+          anio: data.anio ?? 0,
+          expediente: data.expediente ?? 0,
+          impuesto_renta: data.impuesto_renta ?? 0,
+          ingresos_ventas: data.ingresos_ventas ?? 0,
+          n_empleados: data.n_empleados ?? 0,
+          nombre: data.nombre || "",
+          patrimonio: data.patrimonio ?? 0,
+          ruc: data.ruc || "",
+          utilidad_neta: data.utilidad_neta ?? 0,
+        });
+
+        setError(null);
+      } else {
+        setError("No se encontró información para ese RUC.");
+        setFinancialData(undefined); // limpiar data anterior
+      }
+    } catch (err) {
+      setError("Error al buscar datos.");
+      setFinancialData(undefined);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     toast({
       title: "Datos de la empresa guardados",
       description: "La información de su empresa ha sido actualizada correctamente.",
@@ -46,125 +110,51 @@ export const CompanyDataForm = () => {
   };
 
   return (
-    <Card className="p-6 shadow-card">
-      <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-foreground">Información de la Empresa</h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="companyName">Nombre de la Empresa</Label>
-              <Input
-                id="companyName"
-                value={formData.companyName}
-                onChange={(e) => handleInputChange('companyName', e.target.value)}
-                placeholder="Ingrese el nombre de la empresa"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="ruc">Número de RUC</Label>
-              <Input
-                id="ruc"
-                value={formData.ruc}
-                onChange={(e) => handleInputChange('ruc', e.target.value)}
-                placeholder="Ingrese el número de RUC"
-              />
-                            <Button type="button" className="mt-2 w-full bg-gradient-primary text-white">
-                Buscar
-              </Button>
-            </div>
-            
-          </div>
+    <>
+      <Card className="p-6 shadow-card mb-6">
+        <div className="space-y-6">
+          <h3 className="text-lg font-semibold text-foreground">Información de la Empresa</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="industry">Industria</Label>
-              <Select onValueChange={(value) => handleInputChange('industry', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccione industria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="retail">Comercio Minorista</SelectItem>
-                  <SelectItem value="manufacturing">Manufactura</SelectItem>
-                  <SelectItem value="services">Servicios</SelectItem>
-                  <SelectItem value="technology">Tecnología</SelectItem>
-                  <SelectItem value="agriculture">Agricultura</SelectItem>
-                  <SelectItem value="construction">Construcción</SelectItem>
-                  <SelectItem value="hospitality">Hospitalidad</SelectItem>
-                  <SelectItem value="other">Otra</SelectItem>
-                </SelectContent>
-              </Select>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="companyName">Nombre de la Empresa</Label>
+                <Input
+                  id="companyName"
+                  value={formData.companyName}
+                  onChange={(e) => handleInputChange("companyName", e.target.value)}
+                  placeholder="Ingrese el nombre de la empresa"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ruc">Número de RUC</Label>
+                <Input
+                  id="ruc"
+                  value={formData.ruc}
+                  onChange={(e) => handleInputChange("ruc", e.target.value)}
+                  placeholder="Ingrese el número de RUC"
+                />
+                <Button
+                  type="button"
+                  className="mt-2 w-full bg-gradient-primary text-white"
+                  onClick={handleSearch}
+                  disabled={loading}
+                >
+                  {loading ? "Buscando..." : "Buscar"}
+                </Button>
+                {error && <p className="text-destructive mt-1">{error}</p>}
+              </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="employees">Número de Empleados</Label>
-              <Select onValueChange={(value) => handleInputChange('employees', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccione rango" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1-10">1-10</SelectItem>
-                  <SelectItem value="11-50">11-50</SelectItem>
-                  <SelectItem value="51-200">51-200</SelectItem>
-                  <SelectItem value="201-500">201-500</SelectItem>
-                  <SelectItem value="500+">Más de 500</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="yearsOperation">Años en Operación</Label>
-              <Input
-                id="yearsOperation"
-                type="number"
-                value={formData.yearsOperation}
-                onChange={(e) => handleInputChange('yearsOperation', e.target.value)}
-                placeholder="Ingrese años"
-                min="0"
-              />
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="monthlyRevenue">Ingresos Mensuales (USD)</Label>
-            <Input
-              id="monthlyRevenue"
-              type="number"
-              value={formData.monthlyRevenue}
-              onChange={(e) => handleInputChange('monthlyRevenue', e.target.value)}
-              placeholder="Ingrese ingresos mensuales"
-              min="0"
-            />
-          </div>
+            {/* Aquí puedes añadir otros campos del formulario si quieres */}
 
-          <div className="space-y-2">
-            <Label htmlFor="socialMediaLinks">Enlaces de Redes Sociales</Label>
-            <Textarea
-              id="socialMediaLinks"
-              value={formData.socialMediaLinks}
-              onChange={(e) => handleInputChange('socialMediaLinks', e.target.value)}
-              placeholder="Ingrese URLs de redes sociales (Facebook, Instagram, LinkedIn, etc.)"
-              rows={3}
-            />
-          </div>
+          </form>
+        </div>
+      </Card>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción del Negocio</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Describa las actividades y servicios de su negocio"
-              rows={4}
-            />
-          </div>
-
-          <Button type="submit" className="w-full bg-gradient-primary text-white">
-            Guardar Información de la Empresa
-          </Button>
-        </form>
-      </div>
-    </Card>
+      {/* Mostrar métricas financieras solo si hay datos */}
+      {financialData && <FinancialMetrics data={financialData} />}
+    </>
   );
 };
