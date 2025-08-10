@@ -49,12 +49,12 @@ const MetricCard = ({ title, value, change, icon }: MetricCardProps) => {
 };
 
 interface FinancialMetricsProps {
-  data?: FinancialData; // Ahora opcional para permitir que no haya datos inicialmente
-  previousData?: Partial<FinancialData>; // Para cálculo de cambios, opcional
+  data?: FinancialData; // opcional para permitir valores por defecto
+  previousData?: Partial<FinancialData>; // para cálculo de cambios, opcional
 }
 
 export const FinancialMetrics = ({ data, previousData }: FinancialMetricsProps) => {
-  // Valores por defecto si no hay datos
+  // Valores por defecto inicializados en 0 o vacío
   const safeData: FinancialData = {
     activos: 0,
     anio: 0,
@@ -66,7 +66,7 @@ export const FinancialMetrics = ({ data, previousData }: FinancialMetricsProps) 
     patrimonio: 0,
     ruc: "",
     utilidad_neta: 0,
-    ...data, // Sobrescribe con datos reales si existen
+    ...data,
   };
 
   const safeNumber = (value: number | null | undefined) => (typeof value === "number" ? value : 0);

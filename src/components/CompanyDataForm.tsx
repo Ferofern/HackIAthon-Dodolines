@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getCompanyFinancialData } from "@/lib/firebaseUtils";
 
-import { FinancialMetrics } from "./FinancialMetrics"; // Ajusta la ruta según ubicación real
+import { FinancialMetrics } from "./FinancialMetrics";
 
 interface CompanyData {
   companyName: string;
@@ -44,7 +44,20 @@ export const CompanyDataForm = () => {
     description: "",
   });
 
-  const [financialData, setFinancialData] = useState<FinancialData | undefined>(undefined);
+  // Inicializar financialData con valores en cero para que al montar el componente muestre 0
+  const [financialData, setFinancialData] = useState<FinancialData>({
+    activos: 0,
+    anio: 0,
+    expediente: 0,
+    impuesto_renta: 0,
+    ingresos_ventas: 0,
+    n_empleados: 0,
+    nombre: "",
+    patrimonio: 0,
+    ruc: "",
+    utilidad_neta: 0,
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -64,7 +77,6 @@ export const CompanyDataForm = () => {
     try {
       const data = await getCompanyFinancialData(formData.ruc);
       if (data) {
-        // Actualizar formulario con datos básicos
         setFormData((prev) => ({
           ...prev,
           companyName: data.nombre || "",
@@ -73,7 +85,6 @@ export const CompanyDataForm = () => {
           ruc: data.ruc || prev.ruc,
         }));
 
-        // Actualizar financialData para que FinancialMetrics muestre info
         setFinancialData({
           activos: data.activos ?? 0,
           anio: data.anio ?? 0,
@@ -90,11 +101,33 @@ export const CompanyDataForm = () => {
         setError(null);
       } else {
         setError("No se encontró información para ese RUC.");
-        setFinancialData(undefined); // limpiar data anterior
+        setFinancialData({
+          activos: 0,
+          anio: 0,
+          expediente: 0,
+          impuesto_renta: 0,
+          ingresos_ventas: 0,
+          n_empleados: 0,
+          nombre: "",
+          patrimonio: 0,
+          ruc: "",
+          utilidad_neta: 0,
+        });
       }
     } catch (err) {
       setError("Error al buscar datos.");
-      setFinancialData(undefined);
+      setFinancialData({
+        activos: 0,
+        anio: 0,
+        expediente: 0,
+        impuesto_renta: 0,
+        ingresos_ventas: 0,
+        n_empleados: 0,
+        nombre: "",
+        patrimonio: 0,
+        ruc: "",
+        utilidad_neta: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -147,14 +180,13 @@ export const CompanyDataForm = () => {
               </div>
             </div>
 
-            {/* Aquí puedes añadir otros campos del formulario si quieres */}
+            {/* Otros campos opcionales */}
 
           </form>
         </div>
       </Card>
 
-      {/* Mostrar métricas financieras solo si hay datos */}
-      {financialData && <FinancialMetrics data={financialData} />}
+      <FinancialMetrics data={financialData} />
     </>
   );
 };

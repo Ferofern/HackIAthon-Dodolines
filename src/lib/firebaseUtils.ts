@@ -4,7 +4,7 @@ import { firestore } from "./firebase";
 export const getCompanyFinancialData = async (ruc: string) => {
   if (!ruc) return null;
   try {
-    const docRef = doc(firestore, "companies", ruc);
+    const docRef = doc(firestore, "pymes_2023_2024", ruc);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
