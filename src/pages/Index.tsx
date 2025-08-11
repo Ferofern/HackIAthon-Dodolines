@@ -1,3 +1,5 @@
+// Index.tsx (modificado)
+
 import { useState } from "react";
 import { RiskScoreDisplay } from "@/components/RiskScoreDisplay";
 import { FinancialMetrics } from "@/components/FinancialMetrics";
@@ -10,8 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, BarChart3, Share2, Upload, Zap } from "lucide-react";
 
 const Index = () => {
-  // Estado para datos financieros que actualizará CompanyDataForm y mostrará FinancialMetrics en dashboard
   const [financialData, setFinancialData] = useState(undefined);
+
+  // Estado para año seleccionado, por defecto 2024
+  const [selectedYear, setSelectedYear] = useState<"2023" | "2024">("2024");
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,12 +84,31 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Aquí se pasa financialData recibido desde CompanyDataForm */}
-            <FinancialMetrics
-  data={financialData?.data}
-  previousData={financialData?.previousData}
-/>
+            {/* Selector simple para elegir año */}
+            <div className="mb-6 flex space-x-4">
+              <button
+                className={`px-4 py-2 rounded ${
+                  selectedYear === "2024" ? "bg-gradient-primary text-white" : "bg-gray-200"
+                }`}
+                onClick={() => setSelectedYear("2024")}
+              >
+                Año 2024
+              </button>
+              <button
+                className={`px-4 py-2 rounded ${
+                  selectedYear === "2023" ? "bg-gradient-primary text-white" : "bg-gray-200"
+                }`}
+                onClick={() => setSelectedYear("2023")}
+              >
+                Año 2023
+              </button>
+            </div>
 
+            {/* Aquí se pasa la data según el año seleccionado */}
+            <FinancialMetrics
+              data={selectedYear === "2024" ? financialData?.data : financialData?.previousData}
+              previousData={selectedYear === "2024" ? financialData?.previousData : undefined}
+            />
 
             {/* Otros Cards omitidos */}
           </TabsContent>

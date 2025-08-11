@@ -1,3 +1,4 @@
+// firebaseUtils.ts
 import { doc, getDoc } from "firebase/firestore";
 import { firestore } from "./firebase";
 
