@@ -81,7 +81,11 @@ const Index = () => {
             </div>
 
             {/* Aquí se pasa financialData recibido desde CompanyDataForm */}
-            <FinancialMetrics data={financialData} />
+            <FinancialMetrics
+  data={financialData?.data}
+  previousData={financialData?.previousData}
+/>
+
 
             {/* Otros Cards omitidos */}
           </TabsContent>

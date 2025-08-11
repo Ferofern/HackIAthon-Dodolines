@@ -8,7 +8,12 @@ export const getCompanyFinancialData = async (ruc: string) => {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return docSnap.data();
+      const data = docSnap.data();
+
+      return {
+        currentYearData: data.anio?.["2024"] ?? null,
+        previousYearData: data.anio?.["2023"] ?? null,
+      };
     } else {
       return null;
     }
