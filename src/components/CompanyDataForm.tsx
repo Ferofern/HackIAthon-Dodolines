@@ -1,4 +1,3 @@
-//CompanyDataForm.tsx
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,9 +32,10 @@ interface FinancialMetricsData {
 
 interface CompanyDataFormProps {
   setFinancialData: React.Dispatch<React.SetStateAction<FinancialMetricsData | undefined>>;
+  onDataLoaded?: () => void; // NUEVO prop opcional
 }
 
-export const CompanyDataForm = ({ setFinancialData }: CompanyDataFormProps) => {
+export const CompanyDataForm = ({ setFinancialData, onDataLoaded }: CompanyDataFormProps) => {
   const [ruc, setRuc] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +61,7 @@ export const CompanyDataForm = ({ setFinancialData }: CompanyDataFormProps) => {
           title: "Datos cargados",
           description: "Se encontraron datos para el RUC ingresado.",
         });
+        if (onDataLoaded) onDataLoaded(); // Llamar función para cambiar pestaña
       } else {
         setFinancialData(undefined);
         setError("No se encontró información para ese RUC.");

@@ -1,6 +1,4 @@
-// Index.tsx (modificado)
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RiskScoreDisplay } from "@/components/RiskScoreDisplay";
 import { FinancialMetrics } from "@/components/FinancialMetrics";
 import { SocialMediaAnalysis } from "@/components/SocialMediaAnalysis";
@@ -13,9 +11,17 @@ import { Building2, BarChart3, Share2, Upload, Zap } from "lucide-react";
 
 const Index = () => {
   const [financialData, setFinancialData] = useState(undefined);
-
-  // Estado para año seleccionado, por defecto 2024
   const [selectedYear, setSelectedYear] = useState<"2023" | "2024">("2024");
+
+  // Estado para pestaña activa
+  const [tabValue, setTabValue] = useState("data");
+
+  // Cambia a dashboard al cargar datos
+  useEffect(() => {
+    if (financialData) {
+      setTabValue("dashboard");
+    }
+  }, [financialData]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,7 +49,7 @@ const Index = () => {
       </header>
 
       <div className="container mx-auto px-6 py-6">
-        <Tabs defaultValue="data" className="space-y-6">
+        <Tabs value={tabValue} onValueChange={setTabValue} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-fit">
             <TabsTrigger value="data" className="flex items-center space-x-2">
               <Upload className="w-4 h-4" />
@@ -66,11 +72,39 @@ const Index = () => {
           <TabsContent value="data" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <FileUpload />
-              <CompanyDataForm setFinancialData={setFinancialData} />
+              <CompanyDataForm
+                setFinancialData={setFinancialData}
+                onDataLoaded={() => setTabValue("dashboard")}
+              />
             </div>
           </TabsContent>
 
           <TabsContent value="dashboard" className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex space-x-4">
+                <button
+                  className={`px-4 py-2 rounded ${
+                    selectedYear === "2024" ? "bg-gradient-primary text-white" : "bg-gray-200"
+                  }`}
+                  onClick={() => setSelectedYear("2024")}
+                >
+                  Año 2024
+                </button>
+                <button
+                  className={`px-4 py-2 rounded ${
+                    selectedYear === "2023" ? "bg-gradient-primary text-white" : "bg-gray-200"
+                  }`}
+                  onClick={() => setSelectedYear("2023")}
+                >
+                  Año 2023
+                </button>
+              </div>
+
+              <div className="text-lg font-semibold text-foreground">
+                {financialData?.data?.nombre ?? ""}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div>
                 <RiskScoreDisplay score={72} level="medium" creditLimit={144000} />
@@ -84,33 +118,10 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Selector simple para elegir año */}
-            <div className="mb-6 flex space-x-4">
-              <button
-                className={`px-4 py-2 rounded ${
-                  selectedYear === "2024" ? "bg-gradient-primary text-white" : "bg-gray-200"
-                }`}
-                onClick={() => setSelectedYear("2024")}
-              >
-                Año 2024
-              </button>
-              <button
-                className={`px-4 py-2 rounded ${
-                  selectedYear === "2023" ? "bg-gradient-primary text-white" : "bg-gray-200"
-                }`}
-                onClick={() => setSelectedYear("2023")}
-              >
-                Año 2023
-              </button>
-            </div>
-
-            {/* Aquí se pasa la data según el año seleccionado */}
             <FinancialMetrics
               data={selectedYear === "2024" ? financialData?.data : financialData?.previousData}
               previousData={selectedYear === "2024" ? financialData?.previousData : undefined}
             />
-
-            {/* Otros Cards omitidos */}
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6">
