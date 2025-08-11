@@ -1,17 +1,17 @@
+//RiskScoreDisplay.tsx
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getCompanyFinancialData } from "@/lib/firebaseUtils";
 
 interface FinancialData {
   activos: number;
-  anio: number;
-  expediente: number;
-  impuesto_renta: number;
+  anio?: number;
+  expediente?: number;
+  impuesto_renta?: number;
   ingresos_ventas: number;
-  n_empleados: number;
+  n_empleados?: number;
   nombre: string;
-  patrimonio: number;
+  patrimonio?: number;
   ruc: string;
   utilidad_neta: number;
 }
@@ -20,31 +20,31 @@ interface RiskScoreDisplayProps {
   ruc: string;
 }
 
+async function fetchFinancialDataFromApi(ruc: string): Promise<FinancialData | null> {
+  try {
+    const response = await fetch(`https://tu-backend.com/api/financial-data/${ruc}`);
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 export const RiskScoreDisplay = ({ ruc }: RiskScoreDisplayProps) => {
   const [data, setData] = useState<FinancialData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!ruc) return;
 
-    setLoading(true);
-    setError(null);
-
-    getCompanyFinancialData(ruc)
-      .then((result) => {
-        if (result) {
-          setData(result);
-        } else {
-          setError("No se encontró información para ese RUC.");
-        }
-      })
-      .catch(() => {
-        setError("Error al cargar datos de Firebase.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    fetchFinancialDataFromApi(ruc).then((result) => {
+      if (result) {
+        setData(result);
+      } else {
+        setData(null);
+      }
+    });
   }, [ruc]);
 
   const calculateScore = (d: FinancialData) => {
@@ -62,38 +62,9 @@ export const RiskScoreDisplay = ({ ruc }: RiskScoreDisplayProps) => {
     return "high";
   };
 
-  if (loading) {
-    return (
-      <Card className="p-6 shadow-card text-center">
-        <p>Cargando datos financieros...</p>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="p-6 shadow-card text-center text-destructive">
-        <p>{error}</p>
-      </Card>
-    );
-  }
-
-  if (!data) return null;
-
-  const score = calculateScore(data);
+  const score = data ? calculateScore(data) : 0;
   const level = determineLevel(score);
-  const creditLimit = data.activos * 0.1;
-
-  const getScoreColor = () => {
-    switch (level) {
-      case "low":
-        return "text-success";
-      case "medium":
-        return "text-warning";
-      case "high":
-        return "text-destructive";
-    }
-  };
+  const creditLimit = data ? data.activos * 0.1 : 0;
 
   const getScoreBackground = () => {
     switch (level) {
@@ -121,7 +92,7 @@ export const RiskScoreDisplay = ({ ruc }: RiskScoreDisplayProps) => {
     <Card className="p-6 shadow-card">
       <div className="text-center space-y-4">
         <h3 className="text-lg font-semibold text-muted-foreground">Puntaje de Riesgo</h3>
-        <p className="font-medium">{data.nombre}</p>
+        <p className="font-medium">{data?.nombre ?? "Cargando..."}</p>
 
         <div className="relative">
           <div

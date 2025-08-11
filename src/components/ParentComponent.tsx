@@ -1,6 +1,8 @@
+//ParentComponent.tsx
 import React, { useState } from "react";
 import { CompanyDataForm } from "./CompanyDataForm";
 import { FinancialMetrics } from "./FinancialMetrics";
+import { RiskScoreDisplay } from "./RiskScoreDisplay";
 
 interface FinancialData {
   activos?: number;
@@ -37,6 +39,9 @@ export const ParentComponent = () => {
         data={financialData?.data ?? undefined}
         previousData={financialData?.previousData ?? undefined}
       />
+      
+      {/* RiskScoreDisplay solo si existe RUC */}
+      {financialData?.data?.ruc && <RiskScoreDisplay ruc={financialData.data.ruc} />}
     </div>
   );
 };
