@@ -10,13 +10,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, BarChart3, Share2, Upload, Zap } from "lucide-react";
 
 const Index = () => {
-  const [financialData, setFinancialData] = useState(undefined);
-  const [selectedYear, setSelectedYear] = useState<"2023" | "2024">("2024");
+  const [financialData, setFinancialData] = useState<
+    | {
+        data: any;
+        previousData: any;
+      }
+    | undefined
+  >(undefined);
 
-  // Estado para pestaña activa
+  const [riskData, setRiskData] = useState(null);
+  const [selectedYear, setSelectedYear] = useState<"2023" | "2024">("2024");
   const [tabValue, setTabValue] = useState("data");
 
-  // Cambia a dashboard al cargar datos
   useEffect(() => {
     if (financialData) {
       setTabValue("dashboard");
@@ -74,6 +79,7 @@ const Index = () => {
               <FileUpload />
               <CompanyDataForm
                 setFinancialData={setFinancialData}
+                setRiskData={setRiskData}
                 onDataLoaded={() => setTabValue("dashboard")}
               />
             </div>
@@ -107,13 +113,13 @@ const Index = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div>
-                <RiskScoreDisplay score={72} level="medium" creditLimit={144000} />
+                <RiskScoreDisplay data={riskData} />
               </div>
 
               <div className="lg:col-span-2">
                 <Card className="p-6 shadow-card h-full">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Key Risk Factors</h3>
-                  {/* Contenido omitido para brevedad */}
+                  {/* Aquí va contenido adicional que quieras mostrar */}
                 </Card>
               </div>
             </div>

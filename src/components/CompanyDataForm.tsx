@@ -30,16 +30,48 @@ interface FinancialMetricsData {
   previousData: FinancialData | null;
 }
 
-interface CompanyDataFormProps {
-  setFinancialData: React.Dispatch<React.SetStateAction<FinancialMetricsData | undefined>>;
-  onDataLoaded?: () => void; // NUEVO prop opcional
+interface BackendResponse {
+  score: number;
+  level: "low" | "medium" | "high";
+  creditLimit: number;
+  details: {
+    nombre: string;
+    ruc: string;
+    activos: number;
+    ingresos_ventas: number;
+    utilidad_neta: number;
+  };
 }
 
-export const CompanyDataForm = ({ setFinancialData, onDataLoaded }: CompanyDataFormProps) => {
+interface CompanyDataFormProps {
+  setFinancialData: React.Dispatch<React.SetStateAction<FinancialMetricsData | undefined>>;
+  setRiskData: React.Dispatch<React.SetStateAction<BackendResponse | null>>;
+  onDataLoaded?: () => void;
+}
+
+export const CompanyDataForm = ({ setFinancialData, setRiskData, onDataLoaded }: CompanyDataFormProps) => {
   const [ruc, setRuc] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const sendRiskScoreRequest = async (financialData: FinancialData) => {
+    try {
+      console.log("Frontend enviando datos financieros al backend IA:", financialData);
+      const res = await fetch("http://localhost:5000/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ financialData }),
+      });
+      if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+      const data = await res.json();
+      console.log("Respuesta del backend IA:", data);
+      setRiskData(data);
+    } catch (e) {
+      console.error("Error enviando al backend IA", e);
+      setRiskData(null);
+    }
+  };
 
   const handleSearch = async () => {
     if (!ruc) {
@@ -56,18 +88,26 @@ export const CompanyDataForm = ({ setFinancialData, onDataLoaded }: CompanyDataF
           data: result.currentYearData,
           previousData: result.previousYearData,
         });
-        setError(null);
+        if (onDataLoaded) onDataLoaded();
         toast({
           title: "Datos cargados",
           description: "Se encontraron datos para el RUC ingresado.",
         });
-        if (onDataLoaded) onDataLoaded(); // Llamar función para cambiar pestaña
+
+        if (result.currentYearData) {
+          await sendRiskScoreRequest(result.currentYearData);
+        } else {
+          console.warn("No hay datos actuales para enviar al backend IA");
+          setRiskData(null);
+        }
       } else {
         setFinancialData(undefined);
+        setRiskData(null);
         setError("No se encontró información para ese RUC.");
       }
     } catch (err) {
       setFinancialData(undefined);
+      setRiskData(null);
       setError("Error al buscar datos.");
     } finally {
       setLoading(false);
