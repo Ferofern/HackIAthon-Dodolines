@@ -1,3 +1,7 @@
+//Index.tsx
+
+// Index.tsx
+
 import { useState, useEffect } from "react";
 import { RiskScoreDisplay } from "@/components/RiskScoreDisplay";
 import { FinancialMetrics } from "@/components/FinancialMetrics";
@@ -18,7 +22,7 @@ const Index = () => {
     | undefined
   >(undefined);
 
-  const [riskData, setRiskData] = useState(null);
+  const [riskData, setRiskData] = useState<any>(null);
   const [selectedYear, setSelectedYear] = useState<"2023" | "2024">("2024");
   const [tabValue, setTabValue] = useState("data");
 
@@ -79,7 +83,7 @@ const Index = () => {
               <FileUpload />
               <CompanyDataForm
                 setFinancialData={setFinancialData}
-                setRiskData={setRiskData}
+                setRiskData={setRiskData} // Aquí asegúrate que este setea la respuesta del backend completa con comments
                 onDataLoaded={() => setTabValue("dashboard")}
               />
             </div>
@@ -118,8 +122,14 @@ const Index = () => {
 
               <div className="lg:col-span-2">
                 <Card className="p-6 shadow-card h-full">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Key Risk Factors</h3>
-                  {/* Aquí va contenido adicional que quieras mostrar */}
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Factores de Riesgo Clave</h3>
+                  {riskData?.comments ? (
+                    <div className="whitespace-pre-line text-sm text-foreground">
+                      {riskData.comments}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No hay comentarios disponibles.</p>
+                  )}
                 </Card>
               </div>
             </div>

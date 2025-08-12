@@ -1,36 +1,45 @@
 // ParentComponent.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CompanyDataForm } from "./CompanyDataForm";
 import { FinancialMetrics } from "./FinancialMetrics";
 import { RiskScoreDisplay } from "./RiskScoreDisplay";
+import { RiskSimulator } from "./RiskSimulator";
 
-interface FinancialData {
-  activos?: number;
-  expediente?: number;
-  impuesto_renta?: number;
-  ingresos_ventas?: number;
-  n_empleados?: number;
-  nombre?: string;
-  patrimonio?: number;
-  ruc?: string;
-  utilidad_neta?: number;
-  liquidez_corriente?: number;
-  deuda_total?: number;
-  gastos_financieros?: number;
-  margen_bruto?: number;
-  rent_neta_ventas?: number;
-  roe?: number;
-  roa?: number;
-}
-
-interface FinancialMetricsData {
-  data: FinancialData | null;
-  previousData: FinancialData | null;
+interface BackendResponse {
+  score: number;
+  level: "low" | "medium" | "high";
+  creditLimit: number;
+  details: {
+    nombre: string;
+    ruc: string;
+    activos: number;
+    ingresos_ventas: number;
+    utilidad_neta: number;
+  };
 }
 
 export const ParentComponent = () => {
-  const [financialData, setFinancialData] = useState<FinancialMetricsData | null>(null);
+  const [financialData, setFinancialData] = useState(null);
+  const [backendResponse, setBackendResponse] = useState<BackendResponse | null>(null);
   const [rucParaScore, setRucParaScore] = useState<string>("");
+
+  useEffect(() => {
+    if (!rucParaScore) return;
+
+    async function fetchRiskScore() {
+      try {
+        const response = await fetch(`/api/risk-score?ruc=${rucParaScore}`);
+        if (!response.ok) throw new Error("Error al obtener score");
+        const data: BackendResponse = await response.json();
+        setBackendResponse(data);
+      } catch (error) {
+        console.error(error);
+        setBackendResponse(null);
+      }
+    }
+
+    fetchRiskScore();
+  }, [rucParaScore]);
 
   const handleRiskScoreRequest = (ruc: string) => {
     setRucParaScore(ruc);
@@ -47,7 +56,10 @@ export const ParentComponent = () => {
         data={financialData?.data ?? undefined}
         previousData={financialData?.previousData ?? undefined}
       />
-      {rucParaScore && <RiskScoreDisplay ruc={rucParaScore} />}
+
+      {/* Pasamos la misma data al display y simulador */}
+      {backendResponse && <RiskScoreDisplay data={backendResponse} />}
+      {backendResponse && <RiskSimulator initialData={backendResponse} />}
     </div>
   );
 };
