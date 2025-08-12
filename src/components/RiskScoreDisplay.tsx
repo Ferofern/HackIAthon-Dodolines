@@ -1,11 +1,11 @@
-// RiskScoreDisplay.tsx
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface BackendResponse {
   score: number;
   level: "low" | "medium" | "high";
-  creditLimit: number;
+  creditLimit?: number | null;
+  comments?: string | null;
   details: {
     nombre: string;
     ruc: string;
@@ -28,6 +28,10 @@ export const RiskScoreDisplay = ({ data }: RiskScoreDisplayProps) => {
     );
   }
 
+  // Aseguramos que creditLimit siempre tenga un número válido
+  const creditLimitSafe = data.creditLimit ?? 0;
+  const commentsSafe = data.comments ?? "Sin comentarios disponibles.";
+
   const getScoreBackground = () => {
     switch (data.level) {
       case "low":
@@ -35,7 +39,9 @@ export const RiskScoreDisplay = ({ data }: RiskScoreDisplayProps) => {
       case "medium":
         return "bg-gradient-warning";
       case "high":
-        return "bg-gradient-risk";
+        return "bg-gradient-destructive";
+      default:
+        return "bg-gray-400";
     }
   };
 
@@ -47,6 +53,8 @@ export const RiskScoreDisplay = ({ data }: RiskScoreDisplayProps) => {
         return "secondary";
       case "high":
         return "destructive";
+      default:
+        return "default";
     }
   };
 
@@ -71,9 +79,12 @@ export const RiskScoreDisplay = ({ data }: RiskScoreDisplayProps) => {
 
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">Límite de Crédito Recomendado</p>
-          <p className="text-2xl font-bold text-primary">
-            ${data.creditLimit.toLocaleString()}
-          </p>
+          <p className="text-2xl font-bold text-primary">${creditLimitSafe.toLocaleString()}</p>
+        </div>
+
+        <div className="text-left mt-4">
+          <p className="font-semibold">Comentarios:</p>
+          <p>{commentsSafe}</p>
         </div>
       </div>
     </Card>

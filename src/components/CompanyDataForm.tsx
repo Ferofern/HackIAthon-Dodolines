@@ -1,3 +1,4 @@
+// CompanyDataForm.tsx
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,16 +57,34 @@ export const CompanyDataForm = ({ setFinancialData, setRiskData, onDataLoaded }:
   const { toast } = useToast();
 
   const sendRiskScoreRequest = async (financialData: FinancialData) => {
+    // Limpiar datos para evitar null/undefined
+    const safeFinancialData = {
+      activos: financialData.activos ?? 0,
+      expediente: financialData.expediente ?? 0,
+      impuesto_renta: financialData.impuesto_renta ?? 0,
+      ingresos_ventas: financialData.ingresos_ventas ?? 0,
+      n_empleados: financialData.n_empleados ?? 0,
+      nombre: financialData.nombre ?? "",
+      patrimonio: financialData.patrimonio ?? 0,
+      ruc: financialData.ruc ?? "",
+      utilidad_neta: financialData.utilidad_neta ?? 0,
+      liquidez_corriente: financialData.liquidez_corriente ?? 0,
+      deuda_total: financialData.deuda_total ?? 0,
+      gastos_financieros: financialData.gastos_financieros ?? 0,
+      margen_bruto: financialData.margen_bruto ?? 0,
+      rent_neta_ventas: financialData.rent_neta_ventas ?? 0,
+      roe: financialData.roe ?? 0,
+      roa: financialData.roa ?? 0,
+    };
+
     try {
-      console.log("Frontend enviando datos financieros al backend IA:", financialData);
       const res = await fetch("http://localhost:5000/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ financialData }),
+        body: JSON.stringify({ financialData: safeFinancialData }),
       });
       if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
       const data = await res.json();
-      console.log("Respuesta del backend IA:", data);
       setRiskData(data);
     } catch (e) {
       console.error("Error enviando al backend IA", e);
